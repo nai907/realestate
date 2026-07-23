@@ -441,6 +441,24 @@ img {
   font-size: 1.05rem;
 }
 
+.owner-contact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 0.95rem;
+}
+
+.owner-contact span {
+  color: var(--color-text-muted);
+}
+
+.owner-contact a {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
 .tag {
   display: inline-block;
   font-size: 0.72rem;

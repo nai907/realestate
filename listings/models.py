@@ -27,6 +27,7 @@ class Property(models.Model):
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     zip_code = models.CharField(max_length=20)
+    owner_phone = models.CharField(max_length=30, blank=True, help_text='Contact number shown on the detail page')
     is_featured = models.BooleanField(default=False)
     is_available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

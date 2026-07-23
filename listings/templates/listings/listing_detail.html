@@ -57,6 +57,13 @@
         <div><span>Type</span><strong>{{ property.get_property_type_display }}</strong></div>
       </div>
 
+      {% if property.owner_phone %}
+        <div class="owner-contact">
+          <span>Contact owner</span>
+          <a href="tel:{{ property.owner_phone }}">{{ property.owner_phone }}</a>
+        </div>
+      {% endif %}
+
       <div id="detail-favorite-app"></div>
     </aside>
   </div>
