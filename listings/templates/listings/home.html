@@ -1,0 +1,61 @@
+{% extends 'listings/base.html' %}
+{% load static %}
+
+{% block title %}HomeComfy &mdash; Find Your Next Home{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <div class="container">
+      <h1>Find a place you'll love to call home.</h1>
+      <p>Browse curated houses, apartments, condos and more &mdash; for sale or for rent, in the neighborhoods you actually want to live in.</p>
+      <a href="{% url 'listings:property_list' %}" class="hero-cta">Browse all listings</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Featured properties</h2>
+        <a href="{% url 'listings:property_list' %}" class="view-all">View all listings &rarr;</a>
+      </div>
+
+      {% if featured_properties %}
+        <div class="property-grid">
+          {% for property in featured_properties %}
+            {% include 'listings/_property_card.html' %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <p>No featured properties yet &mdash; check back soon, or add some via the <a href="/admin/">admin panel</a>.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    // Mount a tiny Vue app on every favorite-heart placeholder rendered by
+    // the server. Each card gets its own small, self-contained instance.
+    document.querySelectorAll('.favorite-mount').forEach((el) => {
+      const propertyId = el.dataset.propertyId;
+      Vue.createApp({
+        data() {
+          return { active: Favorites.has(propertyId) };
+        },
+        methods: {
+          toggle() {
+            this.active = Favorites.toggle(propertyId);
+          },
+        },
+        template: `
+          <button class="favorite-btn" :aria-pressed="active" @click.prevent="toggle" title="Save to favorites">
+            <span v-if="active">&#9829;</span>
+            <span v-else>&#9825;</span>
+          </button>
+        `,
+      }).mount(el);
+    });
+  </script>
+{% endblock %}

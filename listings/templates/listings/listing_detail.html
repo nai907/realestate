@@ -1,0 +1,113 @@
+{% extends 'listings/base.html' %}
+{% load humanize %}
+
+{% block title %}{{ property.title }} &mdash; HomeComfy{% endblock %}
+
+{% block content %}
+  <div class="container detail-header">
+    <div class="breadcrumb">
+      <a href="{% url 'listings:home' %}">Home</a> &rsaquo;
+      <a href="{% url 'listings:property_list' %}">Listings</a> &rsaquo;
+      {{ property.title }}
+    </div>
+  </div>
+
+  <div class="container detail-grid">
+    <div>
+      <div id="gallery-app">
+        <div class="gallery-wrap">
+          <div class="gallery-main">
+            <img :src="currentImage.url" :alt="currentImage.caption || '{{ property.title|escapejs }}'">
+          </div>
+          <template v-if="images.length > 1">
+            <button class="gallery-nav-btn prev" @click="prev">&#10094;</button>
+            <button class="gallery-nav-btn next" @click="next">&#10095;</button>
+          </template>
+        </div>
+        <div class="gallery-thumbs" v-if="images.length > 1">
+          <img v-for="(img, idx) in images"
+               :key="idx"
+               :src="img.url"
+               :class="{ active: idx === currentIndex }"
+               @click="select(idx)"
+               :alt="img.caption || 'thumbnail'">
+        </div>
+      </div>
+
+      <div class="detail-description">
+        <h3>About this property</h3>
+        <p>{{ property.description|linebreaksbr }}</p>
+      </div>
+    </div>
+
+    <aside class="detail-sidebar">
+      <span class="tag">{{ property.get_listing_type_display }}</span>
+      <span class="tag">{{ property.get_property_type_display }}</span>
+      <h1>{{ property.title }}</h1>
+      <p class="property-location">{{ property.address }}, {{ property.city }}, {{ property.state }} {{ property.zip_code }}</p>
+      <p class="property-price">
+        &#3647;{{ property.price|floatformat:0|intcomma }}
+        {% if property.listing_type == 'rent' %}<small>/ month</small>{% endif %}
+      </p>
+
+      <div class="detail-facts">
+        <div><span>Bedrooms</span><strong>{{ property.bedrooms }}</strong></div>
+        <div><span>Bathrooms</span><strong>{{ property.bathrooms }}</strong></div>
+        <div><span>Area</span><strong>{{ property.area_sqft|intcomma }} sqft</strong></div>
+        <div><span>Type</span><strong>{{ property.get_property_type_display }}</strong></div>
+      </div>
+
+      <div id="detail-favorite-app"></div>
+    </aside>
+  </div>
+
+  {{ gallery_images|json_script:"gallery-data" }}
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    const galleryData = JSON.parse(document.getElementById('gallery-data').textContent);
+
+    Vue.createApp({
+      data() {
+        return {
+          images: galleryData.length ? galleryData : [{ url: '', caption: '{{ property.title|escapejs }}' }],
+          currentIndex: 0,
+        };
+      },
+      computed: {
+        currentImage() {
+          return this.images[this.currentIndex];
+        },
+      },
+      methods: {
+        select(idx) {
+          this.currentIndex = idx;
+        },
+        next() {
+          this.currentIndex = (this.currentIndex + 1) % this.images.length;
+        },
+        prev() {
+          this.currentIndex = (this.currentIndex - 1 + this.images.length) % this.images.length;
+        },
+      },
+    }).mount('#gallery-app');
+
+    Vue.createApp({
+      data() {
+        return { active: Favorites.has('{{ property.pk }}') };
+      },
+      methods: {
+        toggle() {
+          this.active = Favorites.toggle('{{ property.pk }}');
+        },
+      },
+      template: `
+        <button class="hero-cta" style="width:100%;border:none;cursor:pointer;" @click="toggle">
+          <span v-if="active">&#9829; Saved to favorites</span>
+          <span v-else>&#9825; Save to favorites</span>
+        </button>
+      `,
+    }).mount('#detail-favorite-app');
+  </script>
+{% endblock %}

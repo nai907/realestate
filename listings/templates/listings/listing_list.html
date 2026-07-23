@@ -1,0 +1,68 @@
+{% extends 'listings/base.html' %}
+
+{% block title %}All Listings &mdash; HomeComfy{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2>All listings</h2>
+        <span class="view-all">{{ page_obj.paginator.count }} propert{{ page_obj.paginator.count|pluralize:"y,ies" }}</span>
+      </div>
+
+      {% if properties %}
+        <div class="property-grid">
+          {% for property in properties %}
+            {% include 'listings/_property_card.html' %}
+          {% endfor %}
+        </div>
+
+        {% if page_obj.has_other_pages %}
+          <div class="pagination">
+            {% if page_obj.has_previous %}
+              <a href="?page={{ page_obj.previous_page_number }}">&larr; Prev</a>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+              {% if num == page_obj.number %}
+                <span class="current">{{ num }}</span>
+              {% else %}
+                <a href="?page={{ num }}">{{ num }}</a>
+              {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}">Next &rarr;</a>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% else %}
+        <div class="empty-state">
+          <p>No properties available right now &mdash; add some via the <a href="/admin/">admin panel</a>.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    document.querySelectorAll('.favorite-mount').forEach((el) => {
+      const propertyId = el.dataset.propertyId;
+      Vue.createApp({
+        data() {
+          return { active: Favorites.has(propertyId) };
+        },
+        methods: {
+          toggle() {
+            this.active = Favorites.toggle(propertyId);
+          },
+        },
+        template: `
+          <button class="favorite-btn" :aria-pressed="active" @click.prevent="toggle" title="Save to favorites">
+            <span v-if="active">&#9829;</span>
+            <span v-else>&#9825;</span>
+          </button>
+        `,
+      }).mount(el);
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}HomeComfy{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'listings/css/style.css' %}">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script>
+    // Shared client-side favorites store (localStorage), used by the
+    // small inline Vue apps mounted on each property card's heart button.
+    window.Favorites = {
+      KEY: 'homecomfy_favorites',
+      get() {
+        try {
+          return JSON.parse(localStorage.getItem(this.KEY)) || [];
+        } catch (e) {
+          return [];
+        }
+      },
+      has(id) {
+        return this.get().includes(String(id));
+      },
+      toggle(id) {
+        id = String(id);
+        const current = this.get();
+        const next = current.includes(id)
+          ? current.filter((x) => x !== id)
+          : [...current, id];
+        localStorage.setItem(this.KEY, JSON.stringify(next));
+        return next.includes(id);
+      },
+    };
+  </script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a href="{% url 'listings:home' %}" class="brand">Home<span>Comfy</span></a>
+      <nav class="nav-links">
+        <a href="{% url 'listings:home' %}">Home</a>
+        <a href="{% url 'listings:property_list' %}">Listings</a>
+        <a href="/admin/" class="admin-link">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div><strong>HomeComfy</strong> &mdash; find your next home.</div>
+      <div>&copy; {% now "Y" %} HomeComfy. All rights reserved.</div>
+    </div>
+  </footer>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
