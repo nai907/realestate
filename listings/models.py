@@ -22,7 +22,7 @@ class Property(models.Model):
     price = models.DecimalField(max_digits=12, decimal_places=2)
     bedrooms = models.PositiveSmallIntegerField()
     bathrooms = models.PositiveSmallIntegerField()
-    area_sqft = models.PositiveIntegerField(help_text='Living area in square feet')
+    area_sqm = models.PositiveIntegerField(help_text='Living area in square meters')
     address = models.CharField(max_length=255)
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
