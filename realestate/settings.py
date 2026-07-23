@@ -29,9 +29,16 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
+# Defaults to off automatically when running on Vercel (VERCEL env var is
+# set by their build/runtime), on otherwise for local `runserver` use.
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False' if os.environ.get('VERCEL') else 'True') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',') if os.environ.get('DJANGO_ALLOWED_HOSTS') else []
+
+if os.environ.get('VERCEL'):
+    ALLOWED_HOSTS.append('.vercel.app')
+    if os.environ.get('VERCEL_URL'):
+        ALLOWED_HOSTS.append(os.environ['VERCEL_URL'])
 
 
 # Application definition
@@ -46,6 +53,8 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'listings',
 ]
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -83,7 +92,10 @@ WSGI_APPLICATION = 'realestate.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # On Vercel the deployment bundle is read-only at runtime, so
+        # api/index.py copies the seeded db into /tmp on cold start and
+        # points here via DJANGO_DB_PATH. Local dev just uses db.sqlite3.
+        'NAME': os.environ.get('DJANGO_DB_PATH', BASE_DIR / 'db.sqlite3'),
     }
 }
 
@@ -123,6 +135,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files (user/generated property images)
 MEDIA_URL = '/media/'
